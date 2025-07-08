@@ -74,9 +74,9 @@ for idx, row in df.iterrows():
                 html=f"""<div style="
                     display: inline-block;
                     font-size: 12px;
-                    color: black;
+                    color: white;
                     font-weight: bold;
-                    background: white;
+                    background: #1877f2;
                     border-radius: 6px;
                     padding: 3px 10px;
                     border: 1px solid #999;
