@@ -25,7 +25,7 @@ def get_coordinates(address, api_key):
         return None, None
 
 st.set_page_config(layout="wide")
-st.title("시설 위치 지도 (Kakao API + Folium)")
+st.title("대세연 맛집")
 
 # 3. place_map_template.csv 파일 자동 불러오기
 csv_file_path = "place_map_template.csv"
