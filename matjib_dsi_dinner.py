@@ -52,7 +52,7 @@ df = geocode_df(df, api_key)
 
 # 5. folium 지도 생성
 map_center = [36.397924, 127.402470]  # 대전시청 중심
-m = folium.Map(location=map_center, zoom_start=17)
+m = folium.Map(location=map_center, zoom_start=16)
 
 for idx, row in df.iterrows():
     if pd.notnull(row['x']) and pd.notnull(row['y']):
