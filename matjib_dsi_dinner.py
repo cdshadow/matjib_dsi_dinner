@@ -16,7 +16,7 @@ st.title("대전세종연구원_맛집_저녁회식")
 def load_data():
     return pd.read_csv("place_map_template.csv", encoding='cp949')
 
-# 3. Kakao 지오코딩 함수
+# 3. 주소→좌표 변환 함수 (지오코딩)
 def get_coordinates(address, api_key):
     url = "https://dapi.kakao.com/v2/local/search/address.json"
     headers = {"Authorization": f"KakaoAK {api_key}"}
@@ -33,34 +33,38 @@ def get_coordinates(address, api_key):
     except:
         return None, None
 
-# 4. 데이터 준비
-data = load_data()
-st.write("시설 목록 미리보기", data.head())
-
-# 5. 좌표 컬럼 없으면 Kakao 지오코딩 (최초 1회만)
-if not all(col in data.columns for col in ["x", "y"]):
+# 4. 주소 → 좌표 변환 (처음 1회만)
+@st.cache_data
+def geocode_dataframe(df, api_key):
+    # 좌표(x, y) 컬럼이 이미 있으면 그대로 반환
+    if "x" in df.columns and "y" in df.columns:
+        return df
     xs, ys = [], []
-    with st.spinner("주소를 좌표로 변환 중입니다... (최대 0.2초/건)"):
-        for addr in data['address']:
-            x, y = get_coordinates(addr, API_KEY)
-            xs.append(x)
-            ys.append(y)
-            time.sleep(0.2)
-    data["x"] = xs
-    data["y"] = ys
+    for addr in df['address']:
+        x, y = get_coordinates(addr, api_key)
+        xs.append(x)
+        ys.append(y)
+        time.sleep(0.2)  # API Rate Limit
+    df = df.copy()
+    df['x'] = xs
+    df['y'] = ys
+    return df
+
+# 5. 데이터 준비 (좌표 변환 결과 캐시)
+raw_data = load_data()
+data = geocode_dataframe(raw_data, API_KEY)
 
 # 6. folium 지도 그리기
 m = folium.Map(location=[36.3504, 127.3845], zoom_start=12)
-
 for _, row in data.iterrows():
     if pd.notnull(row["x"]) and pd.notnull(row["y"]):
         facility_name = str(row.get("name", "이름 없음"))
-        # (1) 기본 마커 + (2) 항상 보이는 텍스트 레이블 추가
+        # (1) 기본 마커
         folium.Marker(
             location=[row["y"], row["x"]],
-            icon=folium.Icon(color='red', icon='cutlery', prefix='fa'),  # 마커모양(원하면 'info-sign' 등 가능)
+            icon=folium.Icon(color='red', icon='cutlery', prefix='fa'),
         ).add_to(m)
-        # 이름을 항상 지도에 표시 (DivIcon)
+        # (2) 이름을 항상 지도에 표시 (DivIcon)
         folium.map.Marker(
             [row["y"], row["x"]],
             icon=folium.DivIcon(html=f"""<div style="font-size: 13px; color: black; background: rgba(255,255,255,0.8); padding: 2px 4px; border-radius: 5px; border:1px solid #ddd; display:inline-block;">{facility_name}</div>""")
