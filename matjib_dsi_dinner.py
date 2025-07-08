@@ -48,10 +48,7 @@ def geocode_df(df, api_key):
     df['y'] = y
     return df
 
-st.info("지오코딩(좌표 변환) 중입니다. 약간 시간이 걸릴 수 있습니다...")
 df = geocode_df(df, api_key)
-
-st.write("좌표 변환 결과 예시", df.head())
 
 # 5. folium 지도 생성
 map_center = [36.397924, 127.402470]  # 대전시청 중심
