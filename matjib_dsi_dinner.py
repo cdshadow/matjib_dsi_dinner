@@ -84,7 +84,7 @@ for idx, row in df.iterrows():
             )
         ).add_to(m)
 
-st.write("## 지도 결과")
+st.write("")
 st_folium(m, width=1000, height=650)
 
 # 6. HTML로 다운로드 옵션
